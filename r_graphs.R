@@ -1,0 +1,43 @@
+metrics <- read.csv("metrics.csv")
+activities <- read.csv("bodystates.csv")
+
+
+f_to_celsius <- function(temp_Far){
+  temp_C <- (temp_Far - 32)*5/9
+  return(temp_C)
+}
+
+metrics$time <- strptime(as.character(metrics$time), format = "%A %b %d %H:%M:%S %Y")
+metrics$skin_temp <- f_to_celsius(metrics$skin_temp)
+
+
+
+metrics2 <- metrics[as.Date(metrics$time) == "2014-03-04", ]
+
+plot(metrics2$time, metrics2$steps, col = "red", pch = 21, cex = 0.4)
+points(metrics2$time, metrics2$heart_rate, col = "blue", pch = 21, cex = 0.4)
+points(metrics2$time, metrics2$skin_temp, col = "green", pch = 21, cex = 0.4)
+
+
+activities$time1 <- strptime(as.character(activities$time1), format = "%A %b %d %H:%M:%S %Y")
+activities$time2 <- strptime(as.character(activities$time2), format = "%A %b %d %H:%M:%S %Y")
+
+activities2 <- activities[as.Date(activities$time1) == "2014-03-04", ]
+
+plot(activities2$time1, activities2$fake_val, type = "l", ylim = c(0, 200))
+for (i in 1:nrow(activities2)){
+  cur_col <- gray((as.integer(activities2$bodystate[i])+2)/8)
+  rect(activities2$time1[i], 0, activities2$time2[i], 200, col = cur_col)
+}
+
+points(metrics2$time, metrics2$steps, col = "blue", pch = 19, cex = 0.6)
+points(metrics2$time, metrics2$heart_rate, col = "red", pch = 19, cex = 0.5)
+points(metrics2$time, metrics2$skin_temp, col = "green", pch = 19, cex = 0.2)
+
+
+
+
+
+
+
+
