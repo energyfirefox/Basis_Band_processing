@@ -1,3 +1,4 @@
+setwd("/Users/anastasiia/work/Basis_Band_processing/")
 metrics <- read.csv("metrics.csv")
 activities <- read.csv("bodystates.csv")
 
@@ -7,7 +8,12 @@ f_to_celsius <- function(temp_Far){
   return(temp_C)
 }
 
-metrics$time <- strptime(as.character(metrics$time), format = "%A %b %d %H:%M:%S %Y")
+Sys.getlocale(category = "LC_ALL")
+Sys.setlocale("LC_TIME", "en_US")
+
+metrics$time <- as.character(metrics$time)
+
+metrics$time <- as.POSIXct(strptime(metrics$time, format = "%A %b %d %H:%M:%S %Y", tz = "EEST"))
 metrics$skin_temp <- f_to_celsius(metrics$skin_temp)
 
 
@@ -26,19 +32,21 @@ legend(2000, 9.5, c("Steps", "Heart rate", "Skin temperature"), lty = c(1, 1, 1)
 
 
 
-activities$time1 <- strptime(as.character(activities$time1), format = "%A %b %d %H:%M:%S %Y")
-activities$time2 <- strptime(as.character(activities$time2), format = "%A %b %d %H:%M:%S %Y")
+activities$time1 <- strptime(as.character(activities$time1), format = "%A %b %d %H:%M:%S %Y", tz = "EEST")
+activities$time2 <- strptime(as.character(activities$time2), format = "%A %b %d %H:%M:%S %Y", tz = "EEST")
 
 activities2 <- activities[as.Date(activities$time1) == "2014-03-04", ]
+activities2$fake_val <- 200
 
 plot(activities2$time1, activities2$fake_val, type = "l", ylim = c(0, 200))
+
 for (i in 1:nrow(activities2)){
   cur_col <- gray((as.integer(activities2$bodystate[i]))/8)
   rect(activities2$time1[i], 0, activities2$time2[i], 200, col = cur_col)
 }
 
 points(metrics2$time, metrics2$steps, col = "blue", pch = 19, cex = 0.6)
-points(metrics2$time, metrics2$heart_rate, col = "red", pch = 21, cex = 0.5)
+points(metrics2$time, metrics2$heart_rate, col = "red", pch = 19, cex = 0.5)
 points(metrics2$time, metrics2$skin_temp, col = "green", pch = 19, cex = 0.2)
 
 
