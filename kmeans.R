@@ -4,16 +4,27 @@ activities <- read.csv("bodystates.csv")
 
 metrics$time <- as.POSIXct(strptime(metrics$time, format = "%A %b %d %H:%M:%S %Y", tz = "EEST"))
 train_set <- metrics[ ,c("time", "steps", "skin_temp", "heart_rate", "gsr")]
+f_to_celsius <- function(temp_Far){
+  temp_C <- (temp_Far - 32)*5/9
+  return(temp_C)
+}
 
- 
+train_set$skin_temp <- f_to_celsius(train_set$skin_temp)
+
+table(activities$bodystate)
+train_set <- train_set[complete.cases(train_set), ]
+train_set_vars <- train_set[ ,c("steps", "skin_temp", "heart_rate", "gsr")]
+fit <- kmeans(train_set_vars, 4, iter.max= 100, nstart =10)
+aggregate(train_set_vars,by=list(fit$cluster),FUN=mean)
 train_set <- data.frame(train_set, fit$cluster)
 plot(train_set$skin_temp, train_set$steps, col = train_set$fit.cluster, pch = 19)
-plot(train_set$heart_rate, train_set$steps, col = train_set$fit.cluster, pch = 19, xlab = "Heart rate", ylab = "Steps")
+plot(train_set$heart_rate, train_set$steps, col = (train_set$fit.cluster + 1), pch = 19, xlab = "Heart rate", ylab = "Steps")
 
 
 # make classify dataset for one day
 cl_train_set <- metrics[as.Date(metrics$time) == "2014-03-04", ]
-
+cl_train_set$skin_temp <- f_to_celsius(cl_train_set$skin_temp)
+ 
 activities$time1 <- strptime(as.character(activities$time1), format = "%A %b %d %H:%M:%S %Y", tz = "EEST")
 activities$time2 <- strptime(as.character(activities$time2), format = "%A %b %d %H:%M:%S %Y", tz = "EEST")
 
@@ -50,6 +61,6 @@ full_checking_set <- merge(train_set_checking, classify_dataset, by = c("time", 
 
 
 names(full_checking_set)
-table(full_checking_set$activity, full_checking_set$fit.cluster) 
+table(full_checking_set$fit.cluster, full_checking_set$activity)
 
 
